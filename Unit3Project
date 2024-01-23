@@ -1,0 +1,198 @@
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import java.io.*;
+import java.util.*;
+
+public class Main implements ActionListener {
+  
+    private static JLabel instructions;
+    private static JLabel dateLabel;
+    private static JTextField monthField;
+    private static JTextField dayField;
+    private static JTextField yearField;
+    private static JLabel taskLabel;
+    private static JTextField taskEnter;
+    private static JLabel list;
+    private static JButton enterButton;
+    private static JButton deleteButton;
+    private static String listItems = "";
+
+    public static void main(String[] args) {
+        
+            JFrame frame = new JFrame("To-Do List Maker");
+            frame.setSize(700, 600);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+            JPanel panel = new JPanel();
+            frame.add(panel);
+            placeComponents(panel);
+            frame.setVisible(true);
+
+            File file = new File("list.txt");
+            if (!file.exists()) {
+                try {
+                    file.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            printOut();
+    }
+
+    private static void placeComponents(JPanel panel) {
+      panel.setLayout(null);
+
+      instructions = new JLabel("<html>Enter what needs to be done and when. If you want to delete the task, simply just click the delete button!</html>");
+      instructions.setBounds(20, 20, 460, 100);
+      instructions.setVerticalAlignment(JLabel.TOP);
+      panel.add(instructions);
+
+      dateLabel = new JLabel("Date: MM/DD/YYYY");
+      dateLabel.setBounds(10, 80, 180, 25);
+      panel.add(dateLabel);
+
+      monthField = new JTextField(10);
+      monthField.setBounds(70, 80, 20, 25);
+      panel.add(monthField);
+
+      dayField = new JTextField(10);
+      dayField.setBounds(100, 80, 20, 25);
+      panel.add(dayField);
+
+      yearField = new JTextField(10);
+      yearField.setBounds(130, 80, 40, 25);
+      panel.add(yearField);
+      
+      taskLabel = new JLabel("Tasks To Get Done");
+      taskLabel.setBounds(10, 120, 180, 25);
+      panel.add(taskLabel);
+
+      taskEnter = new JTextField(20);
+      taskEnter.setBounds(10, 150, 320, 25);
+      panel.add(taskEnter);
+
+      enterButton = new JButton("Enter");
+      enterButton.setBounds(110, 180, 90, 15);
+        enterButton.addActionListener(
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        String info = monthField.getText() + "," + dayField.getText() + "," + yearField.getText() + "," + taskEnter.getText().trim();
+                        writeToFile(info);
+
+                        append();
+                    }
+                }
+        );
+        panel.add(enterButton);
+
+        deleteButton = new JButton("Delete");
+        deleteButton.setBounds(10, 180, 90, 15);
+        deleteButton.addActionListener(
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        deleteTask();
+                        append();
+                    }
+                }
+        );
+        panel.add(deleteButton);
+
+        list = new JLabel("");
+        list.setBounds(10, 220, 460, 150);
+        list.setVerticalAlignment(JLabel.TOP);
+        panel.add(list);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+    }
+
+    public static void printOut() {
+        try {
+            File file = new File("list.txt");
+            Scanner scan = new Scanner(file);
+            if (file.length() != 0) {
+                ArrayList<String> tempList = new ArrayList<>();
+                while (scan.hasNextLine()) {
+                    String info = scan.nextLine();
+                    ArrayList<String> infoArray = new ArrayList<>(Arrays.asList(info.split(",")));
+                    String month = infoArray.get(0);
+                    String day = infoArray.get(1);
+                    String year = infoArray.get(2);
+                    String task = infoArray.get(3);
+                    tempList.add(month + "/" + day + "/" + year + ": " + task.trim());
+                }
+                Collections.sort(tempList);
+                for (String item : tempList) {
+                    listItems += item + "<br>";
+                }
+                list.setText("<html>" + listItems + "</html>");
+            }
+            scan.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("There was an error...Please try again.");
+            e.printStackTrace();
+        }
+    }
+
+    public static void append() {
+        try {
+            File file = new File("list.txt");
+            Scanner scan = new Scanner(file);
+            listItems = "";
+            ArrayList<String> tempList = new ArrayList<>();
+            while (scan.hasNextLine()) {
+                String info = scan.nextLine();
+                ArrayList<String> infoArray = new ArrayList<>(Arrays.asList(info.split(",")));
+                String month = infoArray.get(0);
+                String day = infoArray.get(1);
+                String year = infoArray.get(2);
+                String task = infoArray.get(3);
+                tempList.add(month + "/" + day + "/" + year + ": " + task.trim());
+            }
+            Collections.sort(tempList);
+            for (String item : tempList) {
+                listItems += item + "<br>";
+            }
+            list.setText("<html>" + listItems + "</html>");
+            scan.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("There was an error...Please try again."");
+            e.printStackTrace();
+        }
+    }
+
+    public static void writeToFile(String info) {
+        try {
+            FileWriter writer = new FileWriter("list.txt", true);
+            writer.write(info + "\n");
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void deleteTask() {
+        File inputFile = new File("list.txt");
+        File outputFile = new File("idk.txt");
+
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
+            String lineToRemove = monthField.getText() + "," + dayField.getText() + "," + yearField.getText() + "," + taskEnter.getText().trim();
+            String currentLine;
+            while ((currentLine = reader.readLine()) != null) {
+                if (currentLine.equals(lineToRemove)) {
+                    continue;
+                }
+                writer.write(currentLine + "\n");
+            }
+            writer.close();
+            reader.close();
+            outputFile.renameTo(inputFile);
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+    }
+}
